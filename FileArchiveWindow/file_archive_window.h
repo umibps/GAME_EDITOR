@@ -32,11 +32,11 @@ private slots:
 
     void on_output_file_button_clicked();
 
-    void on_pushButton_clicked();
-
     void on_archive_select_button_clicked();
 
     void on_archive_item_view_itemDoubleClicked(QTreeWidgetItem *item, int column);
+
+    void on_execute_output_button_clicked();
 
 private:
     Ui::file_archive_window *ui;

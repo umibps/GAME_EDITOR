@@ -97,6 +97,10 @@ void ReleaseFileArchive(FILE_ARCHIVE* archive)
 
 static int CompareFileArchiveItem(const FILE_ARCHIVE_ITEM* item1, const FILE_ARCHIVE_ITEM* item2)
 {
+    if(item2->hash_value > item1->hash_value)
+    {
+        return -1;
+    }
 	return item1->hash_value - item2->hash_value;
 }
 

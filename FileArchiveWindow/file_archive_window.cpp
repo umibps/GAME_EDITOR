@@ -21,9 +21,10 @@ FILE_ARCHIVE_WINDOW::FILE_ARCHIVE_WINDOW(QWidget *parent) :
     ui(new Ui::file_archive_window)
 {
     QTranslator translator;
-    translator.load("file_archive_JP.qm", qApp->applicationDirPath());
+    translator.load("FileArchiveWindow_JP.qm", qApp->applicationDirPath());
     qApp->installTranslator(&translator);
 
+    setWindowTitle(tr("File Archive"));
     ui->setupUi(this);
     (void)memset(&archive, 0, sizeof(archive));
 
@@ -44,13 +45,13 @@ FILE_ARCHIVE_WINDOW::~FILE_ARCHIVE_WINDOW()
 void FILE_ARCHIVE_WINDOW::on_input_directory_button_clicked()
 {
     QString directory_name = QFileDialog::getExistingDirectory(this,
-        "Input Directory");
+        tr("Input Directory"));
     ui->input_directory_path_edit->setText(directory_name);
 }
 
 void FILE_ARCHIVE_WINDOW::on_output_file_button_clicked()
 {
-    QString output_file_name = QFileDialog::getSaveFileName(this, "Output");
+    QString output_file_name = QFileDialog::getSaveFileName(this, tr("Output File"));
     ui->output_file_path_edit->setText(output_file_name);
 }
 
@@ -71,7 +72,7 @@ static void AddDirectoryFiles(
         {
             if(file_info.isDir() != false)
             {
-                QString sub_directory_path = path + file_info.fileName();
+                QString sub_directory_path = path + file_info.fileName() + "/";
                 QDir sub_directory(file_info.filePath());
                 AddDirectoryFiles(sub_directory,
                                   sub_directory_path, items);
@@ -223,7 +224,7 @@ bool FILE_ARCHIVE_WINDOW::WriteArchive(const QString& directory_path, const QStr
         QMessageBox message_box(this);
         message_box.setIcon(QMessageBox::Warning);
         message_box.setStandardButtons(QMessageBox::Ok);
-        message_box.setText("Failded to open target directory.");
+        message_box.setText(tr("Failded to open target directory."));
         return false;
     }
 
@@ -237,25 +238,13 @@ bool FILE_ARCHIVE_WINDOW::WriteArchive(const QString& directory_path, const QStr
         QMessageBox message_box(this);
         message_box.setIcon(QMessageBox::Warning);
         message_box.setStandardButtons(QMessageBox::Ok);
-        message_box.setText("Failded to open archive file.");
+        message_box.setText(tr("Failded to open archive file."));
         return false;
     }
     WriteArchiveData(fp, items, directory_path);
     (void)fclose(fp);
 
     return true;
-}
-
-void FILE_ARCHIVE_WINDOW::on_pushButton_clicked()
-{
-    if(WriteArchive(ui->input_directory_path_edit->text(),
-        ui->output_file_path_edit->text()) != false)
-    {
-        QMessageBox message_box(this);
-        message_box.setStandardButtons(QMessageBox::Ok);
-        message_box.setText("Success to write archive.");
-        message_box.exec();
-    }
 }
 
 void FILE_ARCHIVE_WINDOW::ResetFileArchiveView(const QString& file_path)
@@ -278,6 +267,8 @@ void FILE_ARCHIVE_WINDOW::ResetFileArchiveView(const QString& file_path)
 
         // 表示内容をリセット
         ui->archive_item_view->clear();
+        // ソートをON
+        ui->archive_item_view->setSortingEnabled(true);
 
         for(int i=0; i<archive.num_files; i++)
         {
@@ -346,6 +337,7 @@ static bool IsBinaryData(const char* data, size_t data_size)
 void FILE_ARCHIVE_WINDOW::on_archive_item_view_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
     FILE_ARCHIVE_READ *reader;
+    QString file_name = item->text(0).toLower();
     if((reader = FileArchiveReadNew(item->text(0).toLower().toStdString().c_str(), "rb", &archive))
         != NULL)
     {
@@ -362,5 +354,17 @@ void FILE_ARCHIVE_WINDOW::on_archive_item_view_itemDoubleClicked(QTreeWidgetItem
             dialog.exec();
         }
         delete data;
+    }
+}
+
+void FILE_ARCHIVE_WINDOW::on_execute_output_button_clicked()
+{
+    if(WriteArchive(ui->input_directory_path_edit->text(),
+        ui->output_file_path_edit->text()) != false)
+    {
+        QMessageBox message_box(this);
+        message_box.setStandardButtons(QMessageBox::Ok);
+        message_box.setText(tr("Success to write archive."));
+        message_box.exec();
     }
 }
